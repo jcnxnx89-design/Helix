@@ -148,6 +148,7 @@ export function RemoteHostProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const result = await createPairing();
+      console.log("Pairing created:", result);
       setCode(result.code);
       setSessionId(result.sessionId);
       setExpiresAt(new Date(result.expiresAt).getTime());
@@ -166,9 +167,10 @@ export function RemoteHostProvider({ children }: { children: ReactNode }) {
         },
       });
       setStatus("waiting");
-    } catch {
+    } catch (err) {
+      console.error("Pairing error:", err);
       setStatus("error");
-      setError("Pairing failed. Check your connection and try again.");
+      setError(err instanceof Error ? err.message : "Pairing failed. Check your connection and try again.");
     }
   }, [handleCommand, broadcastState]);
 
