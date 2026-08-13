@@ -89,28 +89,47 @@ export const getSources = createServerFn({ method: "GET" })
       },
     });
 
-    // First, try exact match
+    // For movies, skip exact match and go straight to wildcard
+    if (data.mediaType === "movie") {
+      const wildcardQuery = client
+        .from("media_sources")
+        .select("*")
+        .eq("enabled", true)
+        .eq("media_type", "movie")
+        .eq("metadata_id", "0")
+        .isNull("season_number")
+        .isNull("episode_number");
+
+      const { data: rows, error } = await wildcardQuery.order("created_at", { ascending: true });
+      if (error) return [];
+      return (rows as SourceRow[]).map((row) => {
+        let url = row.url;
+        url = url.replace("{id}", data.metadataId);
+        return { ...toSource(row), url };
+      });
+    }
+
+    // For TV: try exact match first (for specific season/episode sources), then wildcard
     let query = client
       .from("media_sources")
       .select("*")
       .eq("enabled", true)
-      .eq("media_type", data.mediaType)
+      .eq("media_type", "tv")
       .eq("metadata_id", data.metadataId);
 
-    // Only filter by season/episode if doing exact match for TV
-    if (data.mediaType === "tv" && data.seasonNumber != null && data.episodeNumber != null) {
+    if (data.seasonNumber != null && data.episodeNumber != null) {
       query = query.eq("season_number", data.seasonNumber).eq("episode_number", data.episodeNumber);
     }
 
     let { data: rows, error } = await query.order("created_at", { ascending: true });
     
-    // If no exact match, try wildcard sources (metadata_id = '0', season/episode = NULL)
+    // If no exact match, try wildcard TV sources
     if (!error && (!rows || rows.length === 0)) {
-      let wildcardQuery = client
+      const wildcardQuery = client
         .from("media_sources")
         .select("*")
         .eq("enabled", true)
-        .eq("media_type", data.mediaType)
+        .eq("media_type", "tv")
         .eq("metadata_id", "0")
         .isNull("season_number")
         .isNull("episode_number");
@@ -123,16 +142,11 @@ export const getSources = createServerFn({ method: "GET" })
     
     if (error) return [];
     return (rows as SourceRow[]).map((row) => {
-      // Replace placeholders in URL
       let url = row.url;
       url = url.replace("{id}", data.metadataId);
       url = url.replace("{season}", String(data.seasonNumber ?? 1));
       url = url.replace("{episode}", String(data.episodeNumber ?? 1));
-      
-      return {
-        ...toSource(row),
-        url,
-      };
+      return { ...toSource(row), url };
     });
   });
 
