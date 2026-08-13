@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { fallback, zodValidator } from "@tanstack/zod-adapter";
+import { useState } from "react";
 import { z } from "zod";
 
 import { VideoPlayer } from "@/components/video/video-player";
@@ -34,6 +35,7 @@ function WatchPage() {
   const navigate = useNavigate({ from: "/watch/$type/$id" });
   const mediaType = type === "tv" ? "tv" : "movie";
   const numericId = Number(id);
+  const [selectedSourceIndex, setSelectedSourceIndex] = useState(0);
 
   const movie = useQuery({ ...movieQuery(numericId), enabled: mediaType === "movie" });
   const show = useQuery({ ...showQuery(numericId), enabled: mediaType === "tv" });
@@ -52,7 +54,7 @@ function WatchPage() {
 
   const detail = mediaType === "tv" ? show.data : movie.data;
   const currentEpisode = episodes.data?.find((e) => e.episodeNumber === (episode ?? 1));
-  const source = sources.data?.[0];
+  const source = sources.data?.[selectedSourceIndex];
   const saved = detail
     ? getPosition(mediaType, numericId, season ?? null, episode ?? null)
     : undefined;
@@ -96,6 +98,23 @@ function WatchPage() {
 
   return (
     <div className="h-screen w-screen bg-black">
+      {sources.data && sources.data.length > 1 && (
+        <div className="absolute left-4 top-4 z-10 flex gap-2">
+          {sources.data.map((src, idx) => (
+            <button
+              key={src.id}
+              onClick={() => setSelectedSourceIndex(idx)}
+              className={`rounded px-3 py-1 text-sm font-medium transition ${
+                selectedSourceIndex === idx
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background/50 text-foreground hover:bg-background/70"
+              }`}
+            >
+              {src.name}
+            </button>
+          ))}
+        </div>
+      )}
       <VideoPlayer
         source={source}
         title={title}
