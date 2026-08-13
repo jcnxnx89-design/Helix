@@ -131,6 +131,7 @@ export interface Preferences {
   subtitlesOn: boolean;
   playbackRate: number;
   completionThreshold: number;
+  preferredSourceName?: string;
 }
 
 export interface UserProfile {

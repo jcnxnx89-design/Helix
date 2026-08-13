@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { fallback, zodValidator } from "@tanstack/zod-adapter";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 import { VideoPlayer } from "@/components/video/video-player";
@@ -52,9 +52,27 @@ function WatchPage() {
     }),
   );
 
+  // Debug logging
+  useEffect(() => {
+    console.log("[WatchPage] Sources query result:", {
+      mediaType,
+      numericId,
+      isLoading: sources.isLoading,
+      isError: sources.isError,
+      error: sources.error,
+      dataLength: sources.data?.length,
+      data: sources.data?.map(s => ({ name: s.name, kind: s.kind, url: s.url })),
+    });
+  }, [sources.data, sources.isLoading, sources.isError, sources.error, mediaType, numericId]);
+
   const detail = mediaType === "tv" ? show.data : movie.data;
   const currentEpisode = episodes.data?.find((e) => e.episodeNumber === (episode ?? 1));
-  const source = sources.data?.[selectedSourceIndex];
+  
+  // Use preferred source if available, otherwise first source
+  const preferredSourceName = profile.preferences.preferredSourceName;
+  const source = preferredSourceName && sources.data
+    ? sources.data.find(s => s.name === preferredSourceName) || sources.data[0]
+    : sources.data?.[selectedSourceIndex];
   const saved = detail
     ? getPosition(mediaType, numericId, season ?? null, episode ?? null)
     : undefined;
@@ -105,25 +123,6 @@ function WatchPage() {
         poster={detail.backdrop}
         startAt={t ?? saved?.position ?? 0}
         onBack={goBack}
-        sourceSelector={
-          sources.data && sources.data.length > 1 ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {sources.data.map((src, idx) => (
-                <button
-                  key={src.id}
-                  onClick={() => setSelectedSourceIndex(idx)}
-                  className={`rounded px-3 py-1 text-sm font-medium transition ${
-                    selectedSourceIndex === idx
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background/50 text-foreground hover:bg-background/70"
-                  }`}
-                >
-                  {src.name}
-                </button>
-              ))}
-            </div>
-          ) : undefined
-        }
         onProgress={(position, duration) =>
           saveProgress({
             mediaType,

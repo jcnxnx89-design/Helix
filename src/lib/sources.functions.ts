@@ -98,8 +98,8 @@ export const getSources = createServerFn({ method: "GET" })
         .eq("enabled", true)
         .eq("media_type", "movie")
         .eq("metadata_id", "0")
-        .isNull("season_number")
-        .isNull("episode_number");
+        .is("season_number", null)
+        .is("episode_number", null);
 
       const { data: rows, error } = await wildcardQuery.order("created_at", { ascending: true });
       console.log("[getSources] Movie wildcard result:", { rowCount: rows?.length, error });
@@ -138,8 +138,8 @@ export const getSources = createServerFn({ method: "GET" })
         .eq("enabled", true)
         .eq("media_type", "tv")
         .eq("metadata_id", "0")
-        .isNull("season_number")
-        .isNull("episode_number");
+        .is("season_number", null)
+        .is("episode_number", null);
 
       const wildcardResult = await wildcardQuery.order("created_at", { ascending: true });
       console.log("[getSources] TV wildcard result:", { rowCount: wildcardResult.data?.length, error: wildcardResult.error });

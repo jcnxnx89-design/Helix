@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { clearMyList, clearPositions, resetProfile, updatePreferences, useProfile } from "@/lib/profile-store";
+import { listAllSources } from "@/lib/sources.functions";
+import { trendingQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -27,6 +30,7 @@ const TOGGLES = [
 
 function SettingsPage() {
   const profile = useProfile();
+  const trendings = useQuery(trendingQuery());
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 md:px-10">
@@ -46,6 +50,38 @@ function SettingsPage() {
             />
           </div>
         ))}
+      </section>
+
+      <section className="mb-8 space-y-3 rounded-2xl border border-border/60 bg-surface p-5">
+        <h2 className="text-lg font-semibold">Preferred streaming source</h2>
+        <p className="text-sm text-muted-foreground">
+          Choose your default video source. You can still switch during playback.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => updatePreferences({ preferredSourceName: undefined })}
+            className={`rounded px-3 py-2 text-sm font-medium transition ${
+              !profile.preferences.preferredSourceName
+                ? "bg-primary text-primary-foreground"
+                : "bg-background/50 text-foreground hover:bg-background/70"
+            }`}
+          >
+            Auto (first available)
+          </button>
+          {["VidCore", "2embed", "HiMovie", "MovieBox", "StreamM4u", "Losmovies", "Flixtor"].map((name) => (
+            <button
+              key={name}
+              onClick={() => updatePreferences({ preferredSourceName: name })}
+              className={`rounded px-3 py-2 text-sm font-medium transition ${
+                profile.preferences.preferredSourceName === name
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-background/50 text-foreground hover:bg-background/70"
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-3 rounded-2xl border border-border/60 bg-surface p-5">
