@@ -149,6 +149,13 @@
   .no-scrollbar {
     scrollbar-width: none;
   }
+
+  /* Remote control focus outline */
+  .remote-focused {
+    outline: 3px solid var(--color-primary) !important;
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
 }
 
 @utility fade-bottom {

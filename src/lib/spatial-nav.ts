@@ -16,6 +16,17 @@ function center(el: Element) {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2, rect: r };
 }
 
+function clearFocusOutline() {
+  document.querySelectorAll("[data-focusable]").forEach((el) => {
+    el.classList.remove("remote-focused");
+  });
+}
+
+function setFocusOutline(el: HTMLElement) {
+  clearFocusOutline();
+  el.classList.add("remote-focused");
+}
+
 export function moveFocus(direction: Direction): boolean {
   const items = focusables();
   if (!items.length) return false;
@@ -23,6 +34,7 @@ export function moveFocus(direction: Direction): boolean {
   const active = document.activeElement as HTMLElement | null;
   if (!active || !items.includes(active)) {
     items[0]?.focus();
+    setFocusOutline(items[0]!);
     items[0]?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
     return true;
   }
@@ -45,6 +57,7 @@ export function moveFocus(direction: Direction): boolean {
 
   if (!best) return false;
   best.el.focus();
+  setFocusOutline(best.el);
   best.el.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
   return true;
 }
