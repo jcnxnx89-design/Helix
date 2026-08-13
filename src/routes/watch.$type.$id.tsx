@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { VideoPlayer } from "@/components/video/video-player";
 import { EmptyState } from "@/components/ui-states";
-import { getPosition, saveProgress } from "@/lib/profile-store";
+import { getPosition, saveProgress, useProfile } from "@/lib/profile-store";
 import { movieQuery, seasonQuery, showQuery, sourcesQuery } from "@/lib/queries";
 
 const watchSearch = z.object({
@@ -36,6 +36,7 @@ function WatchPage() {
   const mediaType = type === "tv" ? "tv" : "movie";
   const numericId = Number(id);
   const [selectedSourceIndex, setSelectedSourceIndex] = useState(0);
+  const profile = useProfile();
 
   const movie = useQuery({ ...movieQuery(numericId), enabled: mediaType === "movie" });
   const show = useQuery({ ...showQuery(numericId), enabled: mediaType === "tv" });
