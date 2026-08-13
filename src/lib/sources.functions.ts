@@ -112,6 +112,7 @@ export const getSources = createServerFn({ method: "GET" })
         .eq("media_type", data.mediaType)
         .eq("metadata_id", "0");
 
+      // For TV: don't filter by season/episode, get all wildcard TV sources
       if (data.mediaType === "tv") {
         wildcardQuery = wildcardQuery.isNull("season_number").isNull("episode_number");
       }
