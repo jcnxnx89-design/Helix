@@ -22,14 +22,21 @@ export const createPairing = createServerFn({ method: "POST" }).handler(async ()
       throw new Error(`Missing env: url=${!!url}, key=${!!key}`);
     }
 
-    // Clean up expired sessions first
-    await fetch(`${url}/rest/v1/remote_sessions?expires_at=lt.${new Date().toISOString()}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "apikey": key,
-      },
-    }).catch(() => {}); // Ignore errors
+    // Clean up expired sessions first - don't parse response, just ignore
+    try {
+      const deleteResp = await fetch(`${url}/rest/v1/remote_sessions?expires_at=lt.${new Date().toISOString()}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${key}`,
+          "apikey": key,
+        },
+      });
+      // Consume the response to avoid memory leaks
+      await deleteResp.text();
+    } catch (e) {
+      // Silently ignore cleanup errors
+      console.debug("Cleanup error (ignored):", e);
+    }
 
     const code = randomCode();
     const expiresAt = new Date(Date.now() + TTL_MS).toISOString();
@@ -41,6 +48,7 @@ export const createPairing = createServerFn({ method: "POST" }).handler(async ()
         "Content-Type": "application/json",
         "Authorization": `Bearer ${key}`,
         "apikey": key,
+        "Prefer": "return=representation",
       },
       body: JSON.stringify({
         pair_code: code,
@@ -53,7 +61,18 @@ export const createPairing = createServerFn({ method: "POST" }).handler(async ()
       throw new Error(`Supabase error: ${response.status} ${error}`);
     }
 
-    const data = await response.json();
+    let data;
+    const responseText = await response.text();
+    if (!responseText) {
+      throw new Error("Empty response from insert");
+    }
+    
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      throw new Error(`Failed to parse response: ${responseText}`);
+    }
+
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error("No data returned from insert");
     }
