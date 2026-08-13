@@ -91,6 +91,7 @@ export const getSources = createServerFn({ method: "GET" })
 
     // For movies, skip exact match and go straight to wildcard
     if (data.mediaType === "movie") {
+      console.log("[getSources] Movie query:", { metadataId: data.metadataId });
       const wildcardQuery = client
         .from("media_sources")
         .select("*")
@@ -101,15 +102,18 @@ export const getSources = createServerFn({ method: "GET" })
         .isNull("episode_number");
 
       const { data: rows, error } = await wildcardQuery.order("created_at", { ascending: true });
+      console.log("[getSources] Movie wildcard result:", { rowCount: rows?.length, error });
       if (error) return [];
       return (rows as SourceRow[]).map((row) => {
         let url = row.url;
         url = url.replace("{id}", data.metadataId);
+        console.log("[getSources] Movie source:", { name: row.name, url });
         return { ...toSource(row), url };
       });
     }
 
     // For TV: try exact match first (for specific season/episode sources), then wildcard
+    console.log("[getSources] TV query:", { metadataId: data.metadataId, season: data.seasonNumber, episode: data.episodeNumber });
     let query = client
       .from("media_sources")
       .select("*")
@@ -119,12 +123,15 @@ export const getSources = createServerFn({ method: "GET" })
 
     if (data.seasonNumber != null && data.episodeNumber != null) {
       query = query.eq("season_number", data.seasonNumber).eq("episode_number", data.episodeNumber);
+      console.log("[getSources] TV exact match query for S" + data.seasonNumber + "E" + data.episodeNumber);
     }
 
     let { data: rows, error } = await query.order("created_at", { ascending: true });
+    console.log("[getSources] TV exact match result:", { rowCount: rows?.length, error });
     
     // If no exact match, try wildcard TV sources
     if (!error && (!rows || rows.length === 0)) {
+      console.log("[getSources] TV trying wildcard...");
       const wildcardQuery = client
         .from("media_sources")
         .select("*")
@@ -135,6 +142,7 @@ export const getSources = createServerFn({ method: "GET" })
         .isNull("episode_number");
 
       const wildcardResult = await wildcardQuery.order("created_at", { ascending: true });
+      console.log("[getSources] TV wildcard result:", { rowCount: wildcardResult.data?.length, error: wildcardResult.error });
       if (!wildcardResult.error) {
         rows = wildcardResult.data;
       }
@@ -146,6 +154,7 @@ export const getSources = createServerFn({ method: "GET" })
       url = url.replace("{id}", data.metadataId);
       url = url.replace("{season}", String(data.seasonNumber ?? 1));
       url = url.replace("{episode}", String(data.episodeNumber ?? 1));
+      console.log("[getSources] TV source:", { name: row.name, url });
       return { ...toSource(row), url };
     });
   });
