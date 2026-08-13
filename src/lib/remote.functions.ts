@@ -15,36 +15,54 @@ function randomCode(): string {
 /** The TV/browser host opens a pairing window and receives a secret channel id. */
 export const createPairing = createServerFn({ method: "POST" }).handler(async () => {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    
-    // Debug: log what we have
     const url = process.env["SUPABASE_URL"];
     const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
-    console.log("Supabase config check:", {
-      url: url ? "✓" : "✗",
-      key: key ? `✓ (${key.length} chars)` : "✗",
-    });
     
-    await supabaseAdmin.from("remote_sessions").delete().lt("expires_at", new Date().toISOString());
+    if (!url || !key) {
+      throw new Error(`Missing env: url=${!!url}, key=${!!key}`);
+    }
+
+    // Clean up expired sessions first
+    await fetch(`${url}/rest/v1/remote_sessions?expires_at=lt.${new Date().toISOString()}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "apikey": key,
+      },
+    }).catch(() => {}); // Ignore errors
 
     const code = randomCode();
     const expiresAt = new Date(Date.now() + TTL_MS).toISOString();
-    const { data, error } = await supabaseAdmin
-      .from("remote_sessions")
-      .insert({ pair_code: code, expires_at: expiresAt })
-      .select("id, pair_code, expires_at")
-      .single();
 
-    if (error) {
-      console.error("Insert error:", error);
-      throw new Error(`Database error: ${error.message}`);
+    // Insert new pairing session
+    const response = await fetch(`${url}/rest/v1/remote_sessions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${key}`,
+        "apikey": key,
+      },
+      body: JSON.stringify({
+        pair_code: code,
+        expires_at: expiresAt,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Supabase error: ${response.status} ${error}`);
     }
-    if (!data) throw new Error("No data returned from insert.");
-    
-    return { sessionId: data.id as string, code: data.pair_code as string, expiresAt };
+
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No data returned from insert");
+    }
+
+    const row = data[0];
+    return { sessionId: row.id as string, code: row.pair_code as string, expiresAt };
   } catch (err) {
     console.error("createPairing error:", err);
-    throw new Error("Could not start a pairing session.");
+    throw new Error(`Could not start a pairing session: ${err instanceof Error ? err.message : String(err)}`);
   }
 });
 
