@@ -14,19 +14,38 @@ function randomCode(): string {
 
 /** The TV/browser host opens a pairing window and receives a secret channel id. */
 export const createPairing = createServerFn({ method: "POST" }).handler(async () => {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("remote_sessions").delete().lt("expires_at", new Date().toISOString());
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    
+    // Debug: log what we have
+    const url = process.env["SUPABASE_URL"];
+    const key = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+    console.log("Supabase config check:", {
+      url: url ? "✓" : "✗",
+      key: key ? `✓ (${key.length} chars)` : "✗",
+    });
+    
+    await supabaseAdmin.from("remote_sessions").delete().lt("expires_at", new Date().toISOString());
 
-  const code = randomCode();
-  const expiresAt = new Date(Date.now() + TTL_MS).toISOString();
-  const { data, error } = await supabaseAdmin
-    .from("remote_sessions")
-    .insert({ pair_code: code, expires_at: expiresAt })
-    .select("id, pair_code, expires_at")
-    .single();
+    const code = randomCode();
+    const expiresAt = new Date(Date.now() + TTL_MS).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from("remote_sessions")
+      .insert({ pair_code: code, expires_at: expiresAt })
+      .select("id, pair_code, expires_at")
+      .single();
 
-  if (error || !data) throw new Error("Could not start a pairing session.");
-  return { sessionId: data.id as string, code: data.pair_code as string, expiresAt };
+    if (error) {
+      console.error("Insert error:", error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+    if (!data) throw new Error("No data returned from insert.");
+    
+    return { sessionId: data.id as string, code: data.pair_code as string, expiresAt };
+  } catch (err) {
+    console.error("createPairing error:", err);
+    throw new Error("Could not start a pairing session.");
+  }
 });
 
 /** The phone exchanges the short-lived code from the QR for the session channel. */
