@@ -97,25 +97,23 @@ export const getSources = createServerFn({ method: "GET" })
       .eq("media_type", data.mediaType)
       .eq("metadata_id", data.metadataId);
 
+    // Only filter by season/episode if doing exact match for TV
     if (data.mediaType === "tv" && data.seasonNumber != null && data.episodeNumber != null) {
       query = query.eq("season_number", data.seasonNumber).eq("episode_number", data.episodeNumber);
     }
 
     let { data: rows, error } = await query.order("created_at", { ascending: true });
     
-    // If no exact match, try wildcard sources (metadata_id = '0')
+    // If no exact match, try wildcard sources (metadata_id = '0', season/episode = NULL)
     if (!error && (!rows || rows.length === 0)) {
       let wildcardQuery = client
         .from("media_sources")
         .select("*")
         .eq("enabled", true)
         .eq("media_type", data.mediaType)
-        .eq("metadata_id", "0");
-
-      // For TV: don't filter by season/episode, get all wildcard TV sources
-      if (data.mediaType === "tv") {
-        wildcardQuery = wildcardQuery.isNull("season_number").isNull("episode_number");
-      }
+        .eq("metadata_id", "0")
+        .isNull("season_number")
+        .isNull("episode_number");
 
       const wildcardResult = await wildcardQuery.order("created_at", { ascending: true });
       if (!wildcardResult.error) {
