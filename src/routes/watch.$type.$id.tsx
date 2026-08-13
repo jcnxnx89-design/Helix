@@ -98,23 +98,6 @@ function WatchPage() {
 
   return (
     <div className="h-screen w-screen bg-black">
-      {sources.data && sources.data.length > 1 && (
-        <div className="absolute left-4 top-4 z-10 flex gap-2">
-          {sources.data.map((src, idx) => (
-            <button
-              key={src.id}
-              onClick={() => setSelectedSourceIndex(idx)}
-              className={`rounded px-3 py-1 text-sm font-medium transition ${
-                selectedSourceIndex === idx
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-background/50 text-foreground hover:bg-background/70"
-              }`}
-            >
-              {src.name}
-            </button>
-          ))}
-        </div>
-      )}
       <VideoPlayer
         source={source}
         title={title}
@@ -122,6 +105,25 @@ function WatchPage() {
         poster={detail.backdrop}
         startAt={t ?? saved?.position ?? 0}
         onBack={goBack}
+        sourceSelector={
+          sources.data && sources.data.length > 1 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {sources.data.map((src, idx) => (
+                <button
+                  key={src.id}
+                  onClick={() => setSelectedSourceIndex(idx)}
+                  className={`rounded px-3 py-1 text-sm font-medium transition ${
+                    selectedSourceIndex === idx
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-background/50 text-foreground hover:bg-background/70"
+                  }`}
+                >
+                  {src.name}
+                </button>
+              ))}
+            </div>
+          ) : undefined
+        }
         onProgress={(position, duration) =>
           saveProgress({
             mediaType,

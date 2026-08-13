@@ -35,6 +35,7 @@ export interface VideoPlayerProps {
   onEnded?: () => void;
   onNext?: () => void;
   onPrev?: () => void;
+  sourceSelector?: React.ReactNode;
 }
 
 export function VideoPlayer({
@@ -48,6 +49,7 @@ export function VideoPlayer({
   onEnded,
   onNext,
   onPrev,
+  sourceSelector,
 }: VideoPlayerProps) {
   const shellRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -387,6 +389,7 @@ export function VideoPlayer({
             {subtitle ? (
               <p className="truncate text-sm text-muted-foreground">{subtitle}</p>
             ) : null}
+            {sourceSelector}
           </div>
         </div>
 
