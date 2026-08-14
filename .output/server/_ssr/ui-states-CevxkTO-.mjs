@@ -1,0 +1,105 @@
+import { o as require_jsx_runtime } from "../_libs/@radix-ui/react-collection+[...].mjs";
+import { g as Link } from "../_libs/@tanstack/react-router+[...].mjs";
+import { f as cn, t as Button } from "./router-ChHaMAyj.mjs";
+import { O as Film, _ as RefreshCw, s as TriangleAlert } from "../_libs/lucide-react.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/ui-states-CevxkTO-.js
+var import_jsx_runtime = require_jsx_runtime();
+function EmptyState({ title, description, icon, action }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "flex flex-col items-center justify-center rounded-3xl border border-border/60 bg-surface/50 px-8 py-20 text-center",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "mb-5 flex size-16 items-center justify-center rounded-2xl bg-surface-2 text-primary",
+				children: icon ?? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Film, { className: "size-7" })
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+				className: "text-2xl font-semibold",
+				children: title
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "mt-2 max-w-md text-muted-foreground",
+				children: description
+			}),
+			action ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "mt-6 flex flex-wrap justify-center gap-3",
+				children: action
+			}) : null
+		]
+	});
+}
+function ErrorState({ title = "Something went wrong", description, onRetry }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		role: "alert",
+		className: "flex flex-col items-center justify-center rounded-3xl border border-destructive/30 bg-destructive/5 px-8 py-16 text-center",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, { className: "mb-4 size-8 text-destructive" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+				className: "text-xl font-semibold",
+				children: title
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+				className: "mt-2 max-w-md text-sm text-muted-foreground",
+				children: description ?? "We couldn't load this right now. Please try again."
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "mt-6 flex gap-3",
+				children: [onRetry ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(Button, {
+					onClick: onRetry,
+					"data-focusable": true,
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { className: "size-4" }), " Try again"]
+				}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
+					variant: "outline",
+					asChild: true,
+					"data-focusable": true,
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Link, {
+						to: "/",
+						children: "Go home"
+					})
+				})]
+			})
+		]
+	});
+}
+function Skeleton({ className }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: cn("animate-pulse rounded-xl bg-surface-2", className) });
+}
+function RowSkeleton({ count = 6 }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "flex gap-4 overflow-hidden px-4 md:px-10",
+		children: Array.from({ length: count }).map((_, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "w-[46vw] shrink-0 sm:w-64 md:w-72",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "aspect-video w-full rounded-2xl" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "mt-3 h-4 w-3/4" })]
+		}, i))
+	});
+}
+function HeroSkeleton() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "relative h-[62vh] min-h-[420px] w-full overflow-hidden",
+		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "size-full rounded-none" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "absolute bottom-16 left-4 space-y-4 md:left-10",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-12 w-80" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-4 w-[min(90vw,36rem)]" }),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-11 w-64" })
+			]
+		})]
+	});
+}
+function GridSkeleton({ count = 12 }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+		className: "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6",
+		children: Array.from({ length: count }).map((_, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "aspect-[2/3] w-full rounded-2xl" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "mt-3 h-4 w-2/3" })] }, i))
+	});
+}
+function DetailSkeleton() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(HeroSkeleton, {}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+		className: "space-y-4 px-4 py-10 md:px-10",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-6 w-40" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-4 w-full max-w-3xl" }),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Skeleton, { className: "h-4 w-2/3 max-w-2xl" })
+		]
+	})] });
+}
+//#endregion
+export { HeroSkeleton as a, GridSkeleton as i, EmptyState as n, RowSkeleton as o, ErrorState as r, DetailSkeleton as t };
