@@ -68,7 +68,7 @@ function SettingsPage() {
           >
             Auto (first available)
           </button>
-          {["VidCore", "2embed", "HiMovie", "MovieBox", "StreamM4u", "Losmovies", "Flixtor"].map((name) => (
+          {["VidCore", "VidSrc"].map((name) => (
             <button
               key={name}
               onClick={() => updatePreferences({ preferredSourceName: name })}
