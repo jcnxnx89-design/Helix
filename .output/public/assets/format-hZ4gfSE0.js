@@ -1,1 +1,0 @@
-function e(e){if(!Number.isFinite(e)||e<0)return`0:00`;let t=Math.floor(e%60),n=Math.floor(e/60%60),r=Math.floor(e/3600),i=r>0?String(n).padStart(2,`0`):String(n);return r>0?`${r}:${i}:${String(t).padStart(2,`0`)}`:`${i}:${String(t).padStart(2,`0`)}`}function t(e){if(!e)return null;let t=Math.floor(e/60),n=e%60;return t?`${t}h ${n}m`:`${n}m`}export{e as n,t};
